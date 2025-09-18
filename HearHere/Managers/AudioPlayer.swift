@@ -24,6 +24,7 @@ final class AudioPlayer: NSObject, ObservableObject {
     }
 }
 
+@MainActor
 extension AudioPlayer: AVAudioPlayerDelegate {
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         stop()
