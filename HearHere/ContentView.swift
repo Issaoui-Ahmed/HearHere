@@ -19,11 +19,12 @@ struct ContentView: View {
                 dropList
             }
             .padding()
-            .background(
-                Material.ultraThin
+            .background {
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(.ultraThinMaterial)
                     .opacity(0.95)
-                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            )
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
             .padding()
         }
         .task {
