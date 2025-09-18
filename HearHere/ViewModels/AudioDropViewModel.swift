@@ -30,16 +30,16 @@ final class AudioDropViewModel: ObservableObject {
     private let isPreview: Bool
 
     init(
-        locationManager: LocationManager = LocationManager(),
-        dropStore: AudioDropStore = AudioDropStore(),
-        audioRecorder: AudioRecorder = AudioRecorder(),
-        audioPlayer: AudioPlayer = AudioPlayer(),
+        locationManager: LocationManager? = nil,
+        dropStore: AudioDropStore? = nil,
+        audioRecorder: AudioRecorder? = nil,
+        audioPlayer: AudioPlayer? = nil,
         isPreview: Bool = false
     ) {
-        self.locationManager = locationManager
-        self.dropStore = dropStore
-        self.audioRecorder = audioRecorder
-        self.audioPlayer = audioPlayer
+        self.locationManager = locationManager ?? LocationManager()
+        self.dropStore = dropStore ?? AudioDropStore()
+        self.audioRecorder = audioRecorder ?? AudioRecorder()
+        self.audioPlayer = audioPlayer ?? AudioPlayer()
         self.isPreview = isPreview
         self.mapRegion = MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 37.3349, longitude: -122.00902),
@@ -240,14 +240,9 @@ final class AudioDropViewModel: ObservableObject {
 }
 
 extension AudioDropViewModel {
+    @MainActor
     static var preview: AudioDropViewModel {
-        let viewModel = AudioDropViewModel(
-            locationManager: LocationManager(),
-            dropStore: AudioDropStore(),
-            audioRecorder: AudioRecorder(),
-            audioPlayer: AudioPlayer(),
-            isPreview: true
-        )
+        let viewModel = AudioDropViewModel(isPreview: true)
         viewModel.drops = [
             AudioDrop(
                 id: UUID(),
