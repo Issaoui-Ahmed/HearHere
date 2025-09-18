@@ -57,8 +57,9 @@ final class AudioDropViewModel: ObservableObject {
     func onAppear() async {
         guard !isPreview else { return }
         locationManager.requestAuthorization()
-        await ensureMicrophonePermission()
-        updateStatusForCurrentState()
+        if await ensureMicrophonePermission() {
+            updateStatusForCurrentState()
+        }
     }
 
     func refreshDrops() {
