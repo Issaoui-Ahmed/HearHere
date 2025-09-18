@@ -18,7 +18,7 @@ final class AudioDropViewModel: ObservableObject {
     @Published var notes: String = ""
 
     var canRecord: Bool {
-        !isRecording && microphonePermissionGranted && currentLocation != nil
+        !isRecording && currentLocation != nil
     }
 
     private let locationManager: LocationManager
@@ -46,6 +46,8 @@ final class AudioDropViewModel: ObservableObject {
             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
         )
 
+        self.microphonePermissionGranted = self.audioRecorder.hasMicrophonePermission
+
         if !isPreview {
             setupBindings()
             refreshDrops()
@@ -57,9 +59,7 @@ final class AudioDropViewModel: ObservableObject {
     func onAppear() async {
         guard !isPreview else { return }
         locationManager.requestAuthorization()
-        if await ensureMicrophonePermission() {
-            updateStatusForCurrentState()
-        }
+        updateStatusForCurrentState()
     }
 
     func refreshDrops() {
@@ -170,7 +170,9 @@ final class AudioDropViewModel: ObservableObject {
         }
         let granted = await audioRecorder.requestPermission()
         microphonePermissionGranted = granted
-        if !granted {
+        if granted {
+            updateStatusForCurrentState()
+        } else {
             showMicrophonePermissionAlert = true
             statusMessage = "Microphone access denied"
             statusIconName = "mic.slash"
@@ -185,12 +187,8 @@ final class AudioDropViewModel: ObservableObject {
                 self.currentLocation = location
                 if let location {
                     self.mapRegion.center = location.coordinate
-                    self.statusMessage = "Listening near \(self.locationDescription(for: location))"
-                    self.statusIconName = "location.fill"
-                } else {
-                    self.statusMessage = "Searching for your location"
-                    self.statusIconName = "location.magnifyingglass"
                 }
+                self.updateStatusForCurrentState()
             }
             .store(in: &cancellables)
 
@@ -198,6 +196,24 @@ final class AudioDropViewModel: ObservableObject {
             .removeDuplicates()
             .sink { [weak self] status in
                 self?.handleAuthorizationStatus(status)
+            }
+            .store(in: &cancellables)
+
+        audioRecorder.$hasMicrophonePermission
+            .removeDuplicates()
+            .sink { [weak self] granted in
+                guard let self else { return }
+                self.microphonePermissionGranted = granted
+
+                if granted {
+                    self.showMicrophonePermissionAlert = false
+                    self.updateStatusForCurrentState()
+                } else if self.showMicrophonePermissionAlert {
+                    self.statusMessage = "Microphone access denied"
+                    self.statusIconName = "mic.slash"
+                } else {
+                    self.updateStatusForCurrentState()
+                }
             }
             .store(in: &cancellables)
 
@@ -212,6 +228,7 @@ final class AudioDropViewModel: ObservableObject {
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:
             showLocationPermissionAlert = false
+            updateStatusForCurrentState()
         case .denied, .restricted:
             showLocationPermissionAlert = true
             statusMessage = "Location access denied"
@@ -226,9 +243,17 @@ final class AudioDropViewModel: ObservableObject {
     }
 
     private func updateStatusForCurrentState() {
+        guard !isRecording else { return }
+
         if currentLocation == nil {
             statusMessage = "Searching for your location"
             statusIconName = "location.magnifyingglass"
+        } else if !microphonePermissionGranted {
+            statusMessage = "Allow microphone access to drop audio"
+            statusIconName = "mic.circle"
+        } else if let location = currentLocation {
+            statusMessage = "Listening near \(locationDescription(for: location))"
+            statusIconName = "location.fill"
         } else {
             statusMessage = "Ready to drop audio"
             statusIconName = "waveform"

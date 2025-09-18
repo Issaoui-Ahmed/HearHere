@@ -22,8 +22,14 @@
     <true/>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>HearHere uses your location to drop and discover nearby audio clips.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>HearHere uses your location to drop and discover nearby audio clips.</string>
+    <key>NSLocationDefaultAccuracyReducedAccuracyUsageDescription</key>
+    <string>Reduced accuracy mode still helps you find nearby audio drops while respecting your privacy.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>The microphone is needed to record audio drops for others to hear.</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Bluetooth access lets you record and listen to drops using wireless audio devices.</string>
     <key>UIApplicationSceneManifest</key>
     <dict>
         <key>UIApplicationSupportsMultipleScenes</key>
