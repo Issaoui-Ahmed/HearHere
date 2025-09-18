@@ -76,7 +76,15 @@ final class AudioRecorder: NSObject, ObservableObject {
     }
 
     private func configureSession() throws {
-        try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
+        var options: AVAudioSession.CategoryOptions = [.defaultToSpeaker]
+
+        if #available(iOS 10.0, *) {
+            options.insert(.allowBluetoothA2DP)
+        } else {
+            options.insert(.allowBluetooth)
+        }
+
+        try session.setCategory(.playAndRecord, mode: .default, options: options)
         try session.setActive(true, options: .notifyOthersOnDeactivation)
     }
 }
